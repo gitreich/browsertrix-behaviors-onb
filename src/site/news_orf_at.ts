@@ -47,6 +47,8 @@ export class NewsOrfClickVideosBehavior {
 
     const orfMain = xpathNode(Q.orfMain);
 
+    console.log(orfMain)
+
     // Videos of Newsroom
     const videoItems = iterChildMatches(Q.orfVideosDivClass, orfMain);
     for await (const video of videoItems) {
@@ -60,25 +62,23 @@ export class NewsOrfClickVideosBehavior {
 
     // Videos in Articles
     const embedVideoItems = iterChildMatches(Q.orfEmbedVideoClass, orfMain);
+    console.log(embedVideoItems)
     for await (const video of embedVideoItems) {
       console.log(video);
       const video_button = xpathNode(Q.orfEmbedVideoPlayClass, video);
       if (video_button != null) {
         await scrollAndClick(video_button);
         await waitRandom();
-        yield getState(ctx, "Video started", "Videos");
         const video_length = xpathString(Q.orfEmbedVideoLength, video);
         const time = video_length.split(":");
-        var wait = time[0] * 60;
-        wait += time[1];
-        await sleep(wait * 1000);
+        var wait = +time[0] * 60 + +time[1];
+        wait = wait * 1000;
+        yield getState(ctx, "Video started waiting for " + wait + " ms", "Videos");
+        await new Promise(f => setTimeout(f, wait ));
 
         yield getState(ctx, "Video awaited, continue");
       }
-
-
     }
-
 
     yield getState(ctx, "Click ORF Videos Complete");
 
